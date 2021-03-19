@@ -35,6 +35,10 @@ class _VElement(_Element):
     def vlink(self):
         return f'[{self.name}]'
 
+class _AElement(_Element):
+    def alink(self):
+        return f'[{self.name}]'
+
 class _VAElement(_Element):
     def vlink(self):
         return f'[{self.name}__v]'
@@ -202,6 +206,30 @@ class Vstack(_VElement, _Filter):
             self.vlink(),
         ])
 
+class Null(_VElement, _Filter):
+    def __init__(self, name, iname):
+        _Element.__init__(self, name)
+        self.iname = iname
+
+    def _filter(self):
+        return ''.join((
+            _vlink(self.iname),
+            'null',
+            self.vlink(),
+        ))
+
+class Anull(_AElement, _Filter):
+    def __init__(self, name, iname):
+        _Element.__init__(self, name)
+        self.iname = iname
+
+    def _filter(self):
+        return ''.join((
+            _alink(self.iname),
+            'anull',
+            self.alink(),
+        ))
+
 # invocations
 def concat_copy(ifile_names, opath='output.mov'):
     with open(TMP_PATH, 'w') as file:
@@ -247,7 +275,7 @@ def render(opath, vname, aname):
         [
             'ffmpeg',
             *ifile_options,
-            '-filter_complex', ';'.join(filters),
+            *(['-filter_complex', ';'.join(filters)] if filters else []),
             '-map', _vlink(vname),
             '-map', _alink(aname),
             opath,
